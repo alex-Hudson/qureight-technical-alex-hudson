@@ -12,7 +12,7 @@ from django.conf import settings
 
 
 router = routers.DefaultRouter()
-router.register(r'readings', views.HealthcareView, 'people')
+router.register(r'people', views.HealthcareView, 'person')
 
 urlpatterns = [
     path('token-auth/', obtain_jwt_token),

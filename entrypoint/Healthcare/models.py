@@ -8,7 +8,7 @@ from django.db import models
 class Person(models.Model):
     name = models.CharField(max_length=240)
     height = models.TextField(default="")
-    age = models.TextField(default="")
+    age = models.DateField()
     notes = models.TextField(default="")
 
     def __str__(self):
