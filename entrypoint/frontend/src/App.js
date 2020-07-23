@@ -117,7 +117,7 @@ class App extends Component {
       })
       .then((res) => {
         const people = res.data;
-        this.setState({ people: this.sortDyName(people) });
+        this.setState({ people: this.sortByName(people) });
         this.setState({ currentItem: people[0] });
       })
       .catch((err) => {
@@ -136,7 +136,7 @@ class App extends Component {
   /**
    *
    */
-  sortDyName(people) {
+  sortByName(people) {
     const sortedPeople = people.sort((a, b) => {
       const nameA = a.name;
       const nameB = b.name;
@@ -258,16 +258,7 @@ class App extends Component {
 
     return (
       <div className="App">
-        {!this.isMobile ? (
-          <div className={"page-header"}>
-            {/* <img
-              className={"logo"}
-              src={logo}
-              alt="lym-logo"
-              onClick={this.handleLogoClick}
-            /> */}
-          </div>
-        ) : null}
+        {!this.isMobile ? <div className={"page-header"}></div> : null}
         {this.requiresLogin ? (
           <Nav
             logged_in={this.state.logged_in}
@@ -281,22 +272,6 @@ class App extends Component {
         {this.state.logged_in ? this.renderApp() : null}
       </div>
     );
-  }
-
-  /**
-   * Formats date from server into human readable
-   * @param {string} dateString
-   */
-  formatDate(dateString) {
-    if (!dateString) return null;
-    const d = new Date(dateString);
-    const formattedDateString = d.toLocaleDateString("en-UK", {
-      weekday: "long",
-      month: window.innerWidth > 600 ? "long" : "short",
-      day: "numeric",
-    });
-
-    return formattedDateString;
   }
 
   forwardClick = (e) => {
