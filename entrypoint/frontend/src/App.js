@@ -1,20 +1,18 @@
 // frontend/src/App.js
 
 import React, { Component } from "react";
-import logo from "./lym-rush-logo-white.png";
 import Nav from "./components/Nav";
 import axios from "axios";
 import LoginForm from "./components/LoginForm";
 import {
   LeftCircleOutlined,
   RightCircleOutlined,
-  FacebookOutlined,
-  InstagramOutlined,
   ReadOutlined,
   BulbOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
 import { getCookie } from "./NetworkUtils";
+import { getAgeFromDateString, parseString } from "./StringUtils";
 
 class App extends Component {
   constructor(props) {
@@ -120,7 +118,7 @@ class App extends Component {
       .then((res) => {
         const people = res.data;
         this.setState({ people: this.sortDyName(people) });
-        this.setState({ currentItem: this.getTodaysReading() });
+        this.setState({ currentItem: people[0] });
       })
       .catch((err) => {
         console.log(err);
@@ -148,36 +146,6 @@ class App extends Component {
   }
 
   /**
-   * Returns readings recording for today
-   */
-  getTodaysReading = () => {
-    const people = this.state.people;
-    const currentItem = this.getClosestReadingToToday([...people]);
-    this.setState({ currentItem });
-    return currentItem;
-  };
-
-  getClosestReadingToToday(list) {
-    const today = new Date();
-    list.sort(function (a, b) {
-      var distancea = Math.abs(today - new Date(a.reading_date));
-      var distanceb = Math.abs(today - new Date(b.reading_date));
-      return distancea - distanceb; // sort a before b when the distance is smaller
-    });
-    return list[0];
-  }
-
-  /**
-   * Displays completed items
-   */
-  displayCompleted = (status) => {
-    if (status) {
-      return this.setState({ viewCompleted: true });
-    }
-    return this.setState({ viewCompleted: false });
-  };
-
-  /**
    * Sets state to clicked item in the list
    * @param {Object} item
    */
@@ -200,7 +168,7 @@ class App extends Component {
           />,
           "Height"
         )}
-        {this.parseString(item.height, "reading-item")}
+        {parseString(item.height, "reading-item")}
         {this.createCircleIcon(
           <BulbOutlined
             style={{ fontSize: "30px", color: "#13395c" }}
@@ -208,7 +176,7 @@ class App extends Component {
           />,
           "Age"
         )}
-        {this.parseString(this.getAgeFromDateString(item.age), "reading-item")}
+        {parseString(getAgeFromDateString(item.age), "reading-item")}
         {this.createCircleIcon(
           <MessageOutlined
             style={{ fontSize: "30px", color: "#13395c" }}
@@ -216,79 +184,15 @@ class App extends Component {
           />,
           "Notes"
         )}
-        {this.parseString(item.notes, "reading-item prayer-text")}
+        {parseString(item.notes, "reading-item prayer-text")}
         {this.isMobile ? (
           <div className={"page-footer"}>
-            {/* <InstagramOutlined onClick={this.handleIGClick} />
-            <FacebookOutlined onClick={this.handleFBClick} /> */}
-            {/* <img
-              className={"logo"}
-              src={logo}
-              alt="lym-logo"
-              onClick={this.handleLogoClick}
-            /> */}
             <div className={"day-by-day-title"}>Day By Day</div>
           </div>
         ) : null}
       </div>
     );
   };
-
-  getAgeFromDateString(datestring) {
-    const todate = new Date();
-
-    var age = [],
-      fromdate = new Date(datestring),
-      y = [todate.getFullYear(), fromdate.getFullYear()],
-      ydiff = y[0] - y[1],
-      m = [todate.getMonth(), fromdate.getMonth()],
-      mdiff = m[0] - m[1],
-      d = [todate.getDate(), fromdate.getDate()],
-      ddiff = d[0] - d[1];
-
-    if (mdiff < 0 || (mdiff === 0 && ddiff < 0)) --ydiff;
-    if (mdiff < 0) mdiff += 12;
-    if (ddiff < 0) {
-      fromdate.setMonth(m[1] + 1, 0);
-      ddiff = fromdate.getDate() - d[1] + d[0];
-      --mdiff;
-    }
-    if (ydiff > 0) age.push(ydiff + " year" + (ydiff > 1 ? "s " : " "));
-    if (mdiff > 0) age.push(mdiff + " month" + (mdiff > 1 ? "s" : ""));
-    if (ddiff > 0) age.push(ddiff + " day" + (ddiff > 1 ? "s" : ""));
-    if (age.length > 1) age.splice(age.length - 1, 0, " and ");
-    return age.join("");
-  }
-
-  parseString(string, className) {
-    const stringArray = string.split("/n");
-    return stringArray.map((string) => {
-      return (
-        <p key={string.slice(10)} className={className}>
-          {this.parseSuperScript(string)}
-        </p>
-      );
-    });
-  }
-
-  parseSuperScript(string) {
-    if (string.indexOf("/^") === -1) return string;
-    const strings = string.split("/^");
-
-    const letters = [];
-    strings.forEach((string) => {
-      const firstSpaceIndex = string.indexOf(" ");
-      if (firstSpaceIndex !== -1) {
-        letters.push(<sup>{string.slice(0, firstSpaceIndex)}</sup>);
-        string = string.slice(firstSpaceIndex);
-      }
-      for (const letter of string) {
-        letters.push(letter);
-      }
-    });
-
-    return letters;
-  }
 
   createCircleIcon(icon, text) {
     return (
@@ -313,7 +217,7 @@ class App extends Component {
       >
         <span className={`siderbar-title`}>
           {item.name}
-          <p>{this.getAgeFromDateString(item.age)}</p>
+          <p>{getAgeFromDateString(item.age)}</p>
         </span>
       </li>
     ));
@@ -339,18 +243,6 @@ class App extends Component {
         <ul className="list-group list-group-flush">{this.renderItems()}</ul>
       </div>
     );
-  }
-
-  handleLogoClick() {
-    window.location.assign("https://www.lymingtonrushmore.org/");
-  }
-
-  handleFBClick() {
-    window.location.assign("https://www.facebook.com/LRHolidays");
-  }
-
-  handleIGClick() {
-    window.location.assign("https://www.instagram.com/lrholidays/");
   }
 
   /**
